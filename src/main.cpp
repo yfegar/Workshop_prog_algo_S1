@@ -1,5 +1,6 @@
 #include <sil/sil.hpp>
 #include "random.hpp"
+#include <cmath>
 
 void keep_green_only(sil::Image& image)
 {
@@ -96,6 +97,50 @@ sil::Image rotate_to_right(sil::Image& image)
     return new_image;
 }
 
+void rgb_split(sil::Image& image)
+{
+    sil::Image imageref = image;
+    int gap {20};
+    for (int x{20}; x < image.width()-gap - 1; x++)
+    {
+        for (int y{0}; y < image.height(); y++)
+        {
+            // if(x <= gap) // si x est entre 0 et 20
+            // {
+            //     image.pixel(x, y).r = imageref.pixel(x , y).r;  
+            //     image.pixel(x, y).g = imageref.pixel(x, y).g; 
+            //     image.pixel(x, y).b = imageref.pixel(x + gap , y).b; // on décale juste le bleu
+            // } else if (x >= image.width() - gap)
+            // {
+            //     image.pixel(x, y).r = imageref.pixel(x - gap, y).r;  
+            //     image.pixel(x, y).g = imageref.pixel(x, y).g;  
+            //     image.pixel(x, y).b = imageref.pixel(x , y).b;  
+            // }
+            image.pixel(x, y).r = imageref.pixel(x - gap, y).r;  
+            image.pixel(x, y).g = imageref.pixel(x, y).g;  
+            image.pixel(x, y).b = imageref.pixel(x + gap, y).b;    
+        }
+    }
+}
+
+void luminance(sil::Image& image)
+{
+    sil::Image imageref = image;
+    float low_var {1.5f};
+    for (int x{0}; x < image.width() - 1; x++)
+    {
+        for (int y{0}; y < image.height(); y++)
+        {
+            image.pixel(x, y).r = std::pow(imageref.pixel(x, y).r, low_var);  
+            image.pixel(x, y).g = std::pow(imageref.pixel(x, y).g, low_var);  
+            image.pixel(x, y).b = std::pow(imageref.pixel(x, y).b, low_var);    
+        }
+    }
+}
+
+
+
+
 int main()
 {
     {
@@ -134,8 +179,18 @@ int main()
         // image.save("output/noise.png");
     }
     {
+        // sil::Image image{"images/logo.png"};
+        // rotate_to_right(image).save("output/rotate_to_right.png"); // ça tourne vers la gauche ;(
+    }
+    {
         sil::Image image{"images/logo.png"};
-        rotate_to_right(image).save("output/rotate_to_right.png");
+        rgb_split(image);
+        image.save("output/rgb_split.png");
+    }
+    {
+        sil::Image image{"images/photo.jpg"};
+        luminance(image);
+        image.save("output/low_luminance.png");
     }
 
 }
