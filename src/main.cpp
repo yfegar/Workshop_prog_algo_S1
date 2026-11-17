@@ -78,7 +78,7 @@ void noise(sil::Image& image)
     }  
 }
 
-void rotate_to_right(sil::Image& image)
+sil::Image rotate_to_right(sil::Image& image)
 {
     // la nouvelle image aura une width de 345 et une height de 300
     sil::Image new_image{image.height(), image.width()};
@@ -90,9 +90,10 @@ void rotate_to_right(sil::Image& image)
         {
             //                 = 300 - x
             //new_image.pixel(y, new_image.height()-x) = image.pixel(x, y); 
-            image.pixel(x, y) = new_image.pixel(y, new_image.width() - (x+1));     
+            new_image.pixel(y, new_image.height() - 1 - x) = image.pixel(x, y);     
         }
     } 
+    return new_image;
 }
 
 int main()
@@ -134,8 +135,7 @@ int main()
     }
     {
         sil::Image image{"images/logo.png"};
-        rotate_to_right(image);
-        image.save("output/rotate_to_right.png");
+        rotate_to_right(image).save("output/rotate_to_right.png");
     }
 
 }
