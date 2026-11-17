@@ -123,7 +123,7 @@ void rgb_split(sil::Image& image)
     }
 }
 
-void luminance(sil::Image& image)
+void low_luminance(sil::Image& image)
 {
     sil::Image imageref = image;
     float low_var {1.5f};
@@ -138,7 +138,64 @@ void luminance(sil::Image& image)
     }
 }
 
+void high_luminance(sil::Image& image)
+{
+    sil::Image imageref = image;
+    float high_var {0.5f};
+    for (int x{0}; x < image.width() - 1; x++)
+    {
+        for (int y{0}; y < image.height(); y++)
+        {
+            image.pixel(x, y).r = std::pow(imageref.pixel(x, y).r, high_var);  
+            image.pixel(x, y).g = std::pow(imageref.pixel(x, y).g, high_var);  
+            image.pixel(x, y).b = std::pow(imageref.pixel(x, y).b, high_var);    
+        }
+    }
+}
 
+void disk(sil::Image& image, int x_centre, int y_centre)
+{
+    int rayon {100};
+    // int x_centre {image.width()/2};
+    // int y_centre {image.height()/2};
+    for (int x{0}; x < image.width()-1; x++)
+    {
+        for (int y{0}; y < image.height(); y++)
+        {
+            if ((x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre) <= rayon * rayon)
+            {
+                image.pixel(x, y).r = 1;   
+                image.pixel(x, y).g = 1;   
+                image.pixel(x, y).b = 1;   
+            }  
+            else {
+                image.pixel(x, y).r = 0;   
+                image.pixel(x, y).g = 0;   
+                image.pixel(x, y).b = 0; 
+            }
+        }
+    }
+}
+
+void circle(sil::Image& image)
+{
+    int rayon {100};
+    int thickness {5};
+    int x_centre {image.width()/2};
+    int y_centre {image.width()/2};
+    for (int x{0}; x < image.width()-1; x++)
+    {
+        for (int y{0}; y < image.height(); y++)
+        {
+            if ((rayon - thickness) * (rayon - thickness) <= (x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre) && (x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre) <= (rayon * rayon))
+            {
+                image.pixel(x, y).r = 1;   
+                image.pixel(x, y).g = 1;   
+                image.pixel(x, y).b = 1;   
+            }  
+        }
+    }
+}
 
 
 int main()
@@ -183,14 +240,41 @@ int main()
         // rotate_to_right(image).save("output/rotate_to_right.png"); // ça tourne vers la gauche ;(
     }
     {
-        sil::Image image{"images/logo.png"};
-        rgb_split(image);
-        image.save("output/rgb_split.png");
+        // sil::Image image{"images/logo.png"};
+        // rgb_split(image);
+        // image.save("output/rgb_split.png");
     }
     {
-        sil::Image image{"images/photo.jpg"};
-        luminance(image);
-        image.save("output/low_luminance.png");
+        // sil::Image image{"images/photo.jpg"};
+        // low_luminance(image);
+        // image.save("output/low_luminance.png");
     }
+    {
+        // sil::Image image{"images/photo.jpg"};
+        // high_luminance(image);
+        // image.save("output/high_luminance.png");
+    }
+    {
+        sil::Image image{500, 500};
+        disk(image, 250, 250);
+        image.save("output/disk.png");
+    }
+    {
+        // sil::Image image{500, 500};
+        // circle(image);
+        // image.save("output/circle.png");
+    }
+    {
+        sil::Image image{500, 500};
+        for (int x {0}; x < image.width(); x++)
+        {
+            disk(image, x, 250);
+            image.save("output/disk" + std::to_string(x) + ".png");
+        }
+        
+        
+    }
+
+
 
 }
