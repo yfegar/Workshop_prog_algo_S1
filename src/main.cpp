@@ -177,9 +177,9 @@ void disk(sil::Image& image, int x_centre, int y_centre)
     }
 }
 
-void circle(sil::Image& image, int x_centre, int y_centre, int rayon)
+void circle(sil::Image& image, int x_centre, int y_centre)
 {
-    // int rayon {100};
+    int rayon {100};
     int thickness {5};
     // int x_centre {image.width()/2};
     // int y_centre {image.width()/2};
@@ -199,10 +199,23 @@ void circle(sil::Image& image, int x_centre, int y_centre, int rayon)
 
 void rosace(sil::Image& image)
 {
-    circle(image, 250, 250, 100);
-    circle(image, 350, 250, 100);
-    circle(image, 150, 250, 100);
+    float x_centre {image.width()/ 2.0f};
+    float y_centre {image.height()/ 2.0f};
+    int rayon {100};
+    const float pi { 3.14159265359f};
 
+    circle(image, x_centre, y_centre); // cercle central
+
+    // création des 6 cercles autour
+    for (int i {0}; i < 6; i++)
+    {
+        float angle {(pi/6 * 2) * i};
+
+        float x {x_centre + rayon * std::cos(angle)};
+        float y {y_centre + rayon * std::sin(angle)};
+
+        circle(image, x, y);
+    }
 }
 
 
@@ -271,7 +284,7 @@ int main()
     {
         /* CERCLE */
         // sil::Image image{500, 500};
-        // circle(image, 250, 250, 100);
+        // circle(image, 250, 250);
         // image.save("output/circle.png");
     }
     {
