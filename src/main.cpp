@@ -177,12 +177,12 @@ void disk(sil::Image& image, int x_centre, int y_centre)
     }
 }
 
-void circle(sil::Image& image)
+void circle(sil::Image& image, int x_centre, int y_centre, int rayon)
 {
-    int rayon {100};
+    // int rayon {100};
     int thickness {5};
-    int x_centre {image.width()/2};
-    int y_centre {image.width()/2};
+    // int x_centre {image.width()/2};
+    // int y_centre {image.width()/2};
     for (int x{0}; x < image.width()-1; x++)
     {
         for (int y{0}; y < image.height(); y++)
@@ -195,6 +195,14 @@ void circle(sil::Image& image)
             }  
         }
     }
+}
+
+void rosace(sil::Image& image)
+{
+    circle(image, 250, 250, 100);
+    circle(image, 350, 250, 100);
+    circle(image, 150, 250, 100);
+
 }
 
 
@@ -255,24 +263,31 @@ int main()
         // image.save("output/high_luminance.png");
     }
     {
-        sil::Image image{500, 500};
-        disk(image, 250, 250);
-        image.save("output/disk.png");
+        /* DISQUE */
+        // sil::Image image{500, 500};
+        // disk(image, 250, 250);
+        // image.save("output/disk.png");
     }
     {
+        /* CERCLE */
         // sil::Image image{500, 500};
-        // circle(image);
+        // circle(image, 250, 250, 100);
         // image.save("output/circle.png");
     }
     {
+        /* ANIMATION DISQUE */
+        // sil::Image image{500, 500};
+        // for (int x {0}; x < image.width(); x++)
+        // {
+        //     disk(image, x, 250);
+        //     image.save("output/disk" + std::to_string(x) + ".png");
+        // }  
+    }
+    {
+         /* ROSACE */
         sil::Image image{500, 500};
-        for (int x {0}; x < image.width(); x++)
-        {
-            disk(image, x, 250);
-            image.save("output/disk" + std::to_string(x) + ".png");
-        }
-        
-        
+        rosace(image);
+        image.save("output/rosace.png");
     }
 
 
