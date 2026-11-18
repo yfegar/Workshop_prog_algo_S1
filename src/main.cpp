@@ -1,6 +1,8 @@
 #include <sil/sil.hpp>
 #include "random.hpp"
 #include <cmath>
+#include <iostream>
+
 
 void keep_green_only(sil::Image& image)
 {
@@ -52,7 +54,7 @@ void gradient(sil::Image& image)
     }
 }
 
-void mirror(sil::Image& image)
+sil::Image mirror(sil::Image& image)
 {
     sil::Image imageref = image;
     for (int x{0}; x < image.width()-1; x++)
@@ -62,6 +64,7 @@ void mirror(sil::Image& image)
             image.pixel(x, y) = imageref.pixel(image.width() - (x+1),y);     
         }
     }
+    return image;
 }
 
 void noise(sil::Image& image)
@@ -218,77 +221,198 @@ void rosace(sil::Image& image)
     }
 }
 
+sil::Image mosaique(sil::Image& image)
+{
+    sil::Image imageref = image;
+    sil::Image canvas {5 * image.width(), 5 * image.height()};
+    
+    // // 1ÈRE MÉTHODE
+    // sil::Image canvas{1500,1725};
+
+    // // if 1500 % 300 = 1 : place l'image
+    
+    // if (canvas.width() % image.width() == 0) // 1500 % 300 = 0
+    // {
+    //     if (canvas.height() % image.height() == 0)
+    //     {
+    //       for (int i {0}; i < (canvas.width() / image.width()); i++) // i < 5
+    //     {
+    //         for (int j {0}; j < (canvas.height() / image.height()); j++)
+    //         {
+                
+    //             // on génère l'image aux coordonnées du canvas
+    //             for (int x{0}; x < image.width(); x++)
+    //                 {
+    //                     for (int y{0}; y < image.height(); y++)
+    //                     {
+    //                         canvas.pixel(x + i * image.width(), y + j * image.height()) = image.pixel(x, y);  
+    //                     }
+    //                 }
+    //             }
+    //         }       
+    // }
+        
+
+    // 2ÈME MÉTHODE
+    for (int x {0}; x < canvas.width(); x ++)
+    {
+        for (int y {0}; y < canvas.height(); y ++)
+        {
+            canvas.pixel(x,y) = image.pixel(x % image.width(), y % image.height());
+        } 
+    };
+
+    return canvas;
+}
+
+sil::Image mosaique_miroir(sil::Image& image)
+{
+    sil::Image imageref = image;
+    sil::Image image_inversee = mirror(image);
+    sil::Image canvas {5 * image.width(), 5 * image.height()};
+  
+    // 2ÈME MÉTHODE
+    for (int i {0}; i < (canvas.width() * canvas.height()); i++)
+    {
+        if (i % 2 == 0)
+        {
+            for (int x {0}; x < canvas.width(); x++)
+            {
+                for (int y {0}; y < canvas.height(); y++)
+                {
+                    canvas.pixel(x,y) = image.pixel(x % image.width(), y % image.height());   
+                    i += 1;
+                } 
+            };
+        } else if (i % 2 == 1)
+        {
+            for (int x {0}; x < canvas.width(); x ++)
+            {
+                for (int y {0}; y < canvas.height(); y ++)
+                {
+                    canvas.pixel(x,y) = image_inversee.pixel(x % image.width(), y % image.height());   
+                } 
+            };
+        }
+       
+    }
+    return canvas;
+}
+
+
+sil::Image pixel_sort(sil::Image& image)
+{
+    
+    sil::Image sorted_image{image.width(), image.height()};
+    
+    unsigned long int image_pixel_number {image.pixels().size()};
+    for(int i {0}; i < image_pixel_number; i++)
+    {
+        sorted_image.pixels()[i] = image.pixels()[i];   
+    }
+
+    // algorithme de tri
+    // for(int i {0}; i < image_pixel_number; i++)
+    // {
+
+    //     for(int j {i}; j < image_pixel_number; j++)
+    //     {
+            
+    //     }
+    // }
+
+    // deuxième méthode 
+    std::vector<glm::vec3> sorted{sorted_image.pixels()};
+    std::sort(sorted.begin(), sorted.end(), [](glm::vec3 const& color1, glm::vec3 const& color2)
+    {
+        return color1.r < color2.r; // Trie selon la composante rouge
+    });
+    
+
+    return sorted_image;
+}
+
 
 int main()
 {
     {
+        /* 1. KEEP GREEN ONLY */
         // sil::Image image{"images/logo.png"};
         // keep_green_only(image);
         // image.save("output/keep_green_only.png");
     }
     {
+        /* 2. CHANNEL SWAP */
         // sil::Image image{"images/logo.png"};
         // channel_swap(image);
         // image.save("output/channel_swap.png");
     }
     {
+        /* 3. BLACK AND WHITE */
         // sil::Image image{"images/logo.png"};
         // black_and_white(image);
         // image.save("output/black_and_white.png");
     }
     {
+        /* 4. NEGATIVE */
         // sil::Image image{"images/logo.png"};
         // negative(image);
         // image.save("output/negative.png");
     }
     {
+        /* 5. GRADIENT */
         // sil::Image image{300/*width*/, 200/*height*/};
         // gradient(image);
         // image.save("output/gradient.png");
     }
     {
+        /* 6. MIRROR */
         // sil::Image image{"images/logo.png"};
-        // mirror(image);
-        // image.save("output/mirror.png");
+        // mirror(image).save("output/mirror.png");
     }
     {
+        /* 7. RANDOM NOISE */
         // sil::Image image{"images/logo.png"};
         // noise(image);
         // image.save("output/noise.png");
     }
     {
+        /* 8. ROTATE IMAGE BY 90 DEGREES */
         // sil::Image image{"images/logo.png"};
         // rotate_to_right(image).save("output/rotate_to_right.png"); // ça tourne vers la gauche ;(
     }
     {
+        /* 9. RGB SPLIT */
         // sil::Image image{"images/logo.png"};
         // rgb_split(image);
         // image.save("output/rgb_split.png");
     }
     {
+        /* 1O. LOW LUMINANCE */
         // sil::Image image{"images/photo.jpg"};
         // low_luminance(image);
         // image.save("output/low_luminance.png");
     }
     {
+        /* 1O.bis HIGH LUMINANCE */
         // sil::Image image{"images/photo.jpg"};
         // high_luminance(image);
         // image.save("output/high_luminance.png");
     }
     {
-        /* DISQUE */
+        /* 11. DISk */
         // sil::Image image{500, 500};
         // disk(image, 250, 250);
         // image.save("output/disk.png");
     }
     {
-        /* CERCLE */
+        /* 12. CIRCLE */
         // sil::Image image{500, 500};
         // circle(image, 250, 250);
         // image.save("output/circle.png");
     }
     {
-        /* ANIMATION DISQUE */
+        /* 13. DISK ANIMATION */
         // sil::Image image{500, 500};
         // for (int x {0}; x < image.width(); x++)
         // {
@@ -297,10 +421,26 @@ int main()
         // }  
     }
     {
-         /* ROSACE */
-        sil::Image image{500, 500};
-        rosace(image);
-        image.save("output/rosace.png");
+        /* 14. ROSACE */
+        // sil::Image image{500, 500};
+        // rosace(image);
+        // image.save("output/rosace.png");
+    }
+    {
+        /* 15. MOSAIQUE */
+        // sil::Image image{"images/logo.png"};
+        // mosaique(image).save("output/mosaique.png");
+    }
+    {
+        /* 16. MOSAIQUE MIROIR */
+        sil::Image image{"images/logo.png"};
+        mosaique_miroir(image).save("output/mosaique_miroir.png");
+    }
+    {
+        /* ?. PIXEL SORT */
+        // sil::Image image{"images/logo.png"};
+        // pixel_sort(image).save("output/pixel_sort.png"); 
+
     }
 
 
