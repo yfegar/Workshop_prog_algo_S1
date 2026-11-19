@@ -1,7 +1,9 @@
 #include <sil/sil.hpp>
 #include "random.hpp"
 #include <cmath>
+#include <algorithm>
 #include <iostream>
+#include <complex>
 
 
 void keep_green_only(sil::Image& image)
@@ -43,9 +45,9 @@ void negative(sil::Image& image)
 
 void gradient(sil::Image& image)
 {
-    for (float x{0.f}; x < image.width()-1; x++)
+    for (float x {0.f}; x < image.width() - 1; x++)
     {
-        for (float y{0.f}; y < image.height(); y++)
+        for (float y {0.f}; y < image.height(); y++)
         {
             image.pixel(x, y).r = x / image.width();  
             image.pixel(x, y).g = x / image.width();  
@@ -57,11 +59,11 @@ void gradient(sil::Image& image)
 sil::Image mirror(sil::Image& image)
 {
     sil::Image imageref = image;
-    for (int x{0}; x < image.width()-1; x++)
+    for (int x {0}; x < image.width() - 1; x++)
     {
-        for (int y{0}; y < image.height(); y++)
+        for (int y {0}; y < image.height(); y++)
         {
-            image.pixel(x, y) = imageref.pixel(image.width() - (x+1),y);     
+            image.pixel(x, y) = imageref.pixel(image.width() - (x + 1), y);     
         }
     }
     return image;
@@ -69,16 +71,14 @@ sil::Image mirror(sil::Image& image)
 
 void noise(sil::Image& image)
 {
-    // le nombre de pixels altérés varie de 300*300 à 300*345 (qui correspond à son exposition)
-    for (int i{0}; i < (random_int(image.width()*image.width(), image.width()*image.height())); i++)
+    for (int i {0}; i < (random_int(image.width() * image.width(), image.width() * image.height())); i++)
     {
-        int x = random_int(0, image.width()-1);
-        int y = random_int(0, image.height()-1);
+        int x = random_int(0, image.width() - 1);
+        int y = random_int(0, image.height() - 1);
 
         image.pixel(x,y).r = random_float(0.f, 1.f);
         image.pixel(x,y).g = random_float(0.f, 1.f);
-        image.pixel(x,y).b = random_float(0.f, 1.f);    
-        
+        image.pixel(x,y).b = random_float(0.f, 1.f);     
     }  
 }
 
@@ -87,10 +87,10 @@ sil::Image rotate_to_right(sil::Image& image)
     // la nouvelle image aura une width de 345 et une height de 300
     sil::Image new_image{image.height(), image.width()};
     //                 = 300 - 1
-    for (int x{0}; x < image.width()-1; x++)
+    for (int x {0}; x < image.width() - 1; x++)
     {
         //                 = 345 - 1
-        for (int y{0}; y < image.height()-1; y++)
+        for (int y {0}; y < image.height() - 1; y++)
         {
             //                 = 300 - x
             //new_image.pixel(y, new_image.height()-x) = image.pixel(x, y); 
@@ -104,9 +104,10 @@ void rgb_split(sil::Image& image)
 {
     sil::Image imageref = image;
     int gap {20};
-    for (int x{20}; x < image.width()-gap - 1; x++)
+    
+    for (int x {20}; x < image.width() - gap - 1; x++)
     {
-        for (int y{0}; y < image.height(); y++)
+        for (int y {0}; y < image.height(); y++)
         {
             // if(x <= gap) // si x est entre 0 et 20
             // {
@@ -130,9 +131,10 @@ void low_luminance(sil::Image& image)
 {
     sil::Image imageref = image;
     float low_var {1.5f};
-    for (int x{0}; x < image.width() - 1; x++)
+
+    for (int x {0}; x < image.width() - 1; x++)
     {
-        for (int y{0}; y < image.height(); y++)
+        for (int y {0}; y < image.height(); y++)
         {
             image.pixel(x, y).r = std::pow(imageref.pixel(x, y).r, low_var);  
             image.pixel(x, y).g = std::pow(imageref.pixel(x, y).g, low_var);  
@@ -145,9 +147,10 @@ void high_luminance(sil::Image& image)
 {
     sil::Image imageref = image;
     float high_var {0.5f};
-    for (int x{0}; x < image.width() - 1; x++)
+
+    for (int x {0}; x < image.width() - 1; x++)
     {
-        for (int y{0}; y < image.height(); y++)
+        for (int y {0}; y < image.height(); y++)
         {
             image.pixel(x, y).r = std::pow(imageref.pixel(x, y).r, high_var);  
             image.pixel(x, y).g = std::pow(imageref.pixel(x, y).g, high_var);  
@@ -159,11 +162,10 @@ void high_luminance(sil::Image& image)
 void disk(sil::Image& image, int x_centre, int y_centre)
 {
     int rayon {100};
-    // int x_centre {image.width()/2};
-    // int y_centre {image.height()/2};
-    for (int x{0}; x < image.width()-1; x++)
+
+    for (int x {0}; x < image.width() - 1; x++)
     {
-        for (int y{0}; y < image.height(); y++)
+        for (int y {0}; y < image.height(); y++)
         {
             if ((x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre) <= rayon * rayon)
             {
@@ -184,11 +186,10 @@ void circle(sil::Image& image, int x_centre, int y_centre)
 {
     int rayon {100};
     int thickness {5};
-    // int x_centre {image.width()/2};
-    // int y_centre {image.width()/2};
-    for (int x{0}; x < image.width()-1; x++)
+
+    for (int x {0}; x < image.width() - 1; x++)
     {
-        for (int y{0}; y < image.height(); y++)
+        for (int y {0}; y < image.height(); y++)
         {
             if ((rayon - thickness) * (rayon - thickness) <= (x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre) && (x - x_centre) * (x - x_centre) + (y - y_centre) * (y - y_centre) <= (rayon * rayon))
             {
@@ -296,11 +297,39 @@ sil::Image mosaique_miroir(sil::Image& image)
     return canvas;
 }
 
+void glitch(sil::Image& image)
+{
+    int nombre_glitchs {random_int(10, 100)};
+
+    for (int i {0}; i < nombre_glitchs; i++)
+    {
+        int rec_width = random_int(10, 60);
+        int rec_height = random_int(1, 5); 
+
+        int rec1_x {random_int(0, image.width() - rec_width)};
+        int rec1_y {random_int(0, image.height() - rec_height)};
+
+        int rec2_x {random_int(0, image.width() - rec_width)};
+        int rec2_y {random_int(0, image.height() - rec_height)};
+
+        for (int x {0}; x < rec_width; x++)
+        {
+            for (int y {0}; y < rec_height; y++)
+            {
+                std::swap(
+                    image.pixel(rec1_x + x, rec1_y + y),
+                    image.pixel(rec2_x + x, rec2_y + y)
+                );
+            }
+        }
+    }
+}
+
+
 float brightness(glm::vec3 const& color)
 {
     return color.r + color.g + color.b;
 }
-
 
 void pixel_sort(sil::Image& image)
 {
@@ -323,7 +352,63 @@ void pixel_sort_ligne(sil::Image& image)
                 return brightness(color1) < brightness(color2); // Trie selon la luminosité des couleurs (NB : c'est à vous de coder la fonction `brightness`)
             });
     }
-    
+  
+}
+
+void pixel_sort_random(sil::Image& image)
+{
+    for(int y {0}; y < image.height(); y++)
+    {
+        unsigned long total_pixel_number {image.pixels().size()};
+        int sorted_pixel_number {random_int(10, 100)};
+
+        auto begin {image.pixels().begin() + random_int(0, total_pixel_number - sorted_pixel_number)};
+        auto end {begin + sorted_pixel_number};
+
+        std::sort(
+            begin,end,[](glm::vec3 const& color1, glm::vec3 const& color2)
+            {
+                return brightness(color1) < brightness(color2); 
+            });
+    }
+}
+
+void mandelbrot(sil::Image& image)
+{
+    const int max_iterations {50};
+
+    const float x_min {-2.0f};
+    const float x_max {1.0f};
+    const float y_min {-1.5f};
+    const float y_max {1.0f};
+
+    for (int x {0}; x < image.width(); x++)
+    {
+        for (int y {0}; y < image.height(); y++)
+        {
+            float reel = x_min + (static_cast<float>(x) / image.width()) * (x_max - x_min);
+            float imaginaire = y_min + (static_cast<float>(y) / image.height()) * (y_max - y_min);
+            std::complex<float> c(reel, imaginaire);
+
+            std::complex<float> z (0.0f, 0.0f);
+            int iterations {0};
+
+            while (std::norm(z) <= 4.0f && iterations < max_iterations)
+            {
+                z = z * z + c;
+                iterations++;
+            }
+            
+            if (iterations == max_iterations)
+            {
+                image.pixel(x,y) = glm::vec3{1.0f};
+            } else
+            {
+                float brightness = static_cast<float>(iterations) / max_iterations;
+                image.pixel(x,y) = glm::vec3{brightness}; 
+            }  
+        }
+    }
 }
 
 int main()
@@ -430,6 +515,12 @@ int main()
         // mosaique_miroir(image).save("output/mosaique_miroir.png");
     }
     {
+        /* 17. GLITCH */
+        // sil::Image image{"images/logo.png"};
+        // glitch(image);
+        // image.save("output/glitch.png");
+    }
+    {
         /* 18. PIXEL SORT */
         // Tri de tous les pixels
         // sil::Image image{"images/logo.png"};
@@ -439,8 +530,21 @@ int main()
     {
         /* 18.bis PIXEL SORT */
         // Tri des lignes
-        sil::Image image{"images/logo.png"};
-        pixel_sort_ligne(image);
-        image.save("output/pixel_sort_ligne.png"); 
+        // sil::Image image{"images/logo.png"};
+        // pixel_sort_ligne(image);
+        // image.save("output/pixel_sort_ligne.png"); 
+    }
+    {
+        /* 18.ter PIXEL SORT */
+        // Tri des parties aléatoires
+        // sil::Image image{"images/logo.png"};
+        // pixel_sort_random(image);
+        // image.save("output/pixel_sort_random.png"); 
+    }
+    {
+        /* 19. FRACTALE DE MANDELBROT */
+        sil::Image image{500, 500};
+        mandelbrot(image);
+        image.save("output/mandelbrot.png"); 
     }
 }
