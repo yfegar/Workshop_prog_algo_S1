@@ -267,42 +267,38 @@ sil::Image mosaique(sil::Image& image)
 
 sil::Image mosaique_miroir(sil::Image& image)
 {
-    sil::Image imageref = image;
+    // sil::Image imageref = image;
     sil::Image image_inversee = mirror(image);
     sil::Image canvas {5 * image.width(), 5 * image.height()};
   
     // 2ÈME MÉTHODE
-    for (int i {0}; i < (canvas.width() * canvas.height()); i++)
+    for (int x {0}; x < canvas.width(); x++)
     {
-        if (i % 2 == 0)
+        for (int y {0}; y < canvas.height(); y++)
         {
-            for (int x {0}; x < canvas.width(); x++)
+            // indice x et y de la colonne et de la ligne du logo
+            int colonne = x / image.width();
+            int ligne = y / image.height();
+
+            // coordonnées dans le canvas
+            int local_x = x % image.width();
+            int local_y = y % image.height();
+
+            if (colonne % 2 == 0 && ligne % 2 == 0)
             {
-                for (int y {0}; y < canvas.height(); y++)
-                {
-                    canvas.pixel(x,y) = image.pixel(x % image.width(), y % image.height());   
-                    i += 1;
-                } 
-            };
-        } else if (i % 2 == 1)
-        {
-            for (int x {0}; x < canvas.width(); x ++)
+                canvas.pixel(x,y) = image.pixel(local_x, local_y);  
+            } else 
             {
-                for (int y {0}; y < canvas.height(); y ++)
-                {
-                    canvas.pixel(x,y) = image_inversee.pixel(x % image.width(), y % image.height());   
-                } 
-            };
-        }
-       
-    }
+                canvas.pixel(x,y) = image_inversee.pixel(local_x, local_y);  
+            }  
+        } 
+    };
     return canvas;
 }
 
 
 sil::Image pixel_sort(sil::Image& image)
 {
-    
     sil::Image sorted_image{image.width(), image.height()};
     
     unsigned long int image_pixel_number {image.pixels().size()};
@@ -311,24 +307,18 @@ sil::Image pixel_sort(sil::Image& image)
         sorted_image.pixels()[i] = image.pixels()[i];   
     }
 
-    // algorithme de tri
+    // deuxième méthode 
+    // std::vector<glm::vec3> sorted{sorted_image.pixels()};
+    // std::sort(sorted.begin(), sorted.end(), [](glm::vec3 const& color1, glm::vec3 const& color2)
+    // {
+    //     return color1.r < color2.r; // Trie selon la composante rouge
+    // });
+
     // for(int i {0}; i < image_pixel_number; i++)
     // {
-
-    //     for(int j {i}; j < image_pixel_number; j++)
-    //     {
-            
-    //     }
+    //     sorted_image.pixels()[i] = sorted[i];   
     // }
-
-    // deuxième méthode 
-    std::vector<glm::vec3> sorted{sorted_image.pixels()};
-    std::sort(sorted.begin(), sorted.end(), [](glm::vec3 const& color1, glm::vec3 const& color2)
-    {
-        return color1.r < color2.r; // Trie selon la composante rouge
-    });
     
-
     return sorted_image;
 }
 
@@ -432,17 +422,13 @@ int main()
         // mosaique(image).save("output/mosaique.png");
     }
     {
-        /* 16. MOSAIQUE MIROIR */
-        sil::Image image{"images/logo.png"};
-        mosaique_miroir(image).save("output/mosaique_miroir.png");
+        /* 16. MOSAIQUE MIROIR - PAS FINI */
+        // sil::Image image{"images/logo.png"};
+        // mosaique_miroir(image).save("output/mosaique_miroir.png");
     }
     {
         /* ?. PIXEL SORT */
-        // sil::Image image{"images/logo.png"};
-        // pixel_sort(image).save("output/pixel_sort.png"); 
-
+        sil::Image image{"images/low-quality-logo.png"};
+        pixel_sort(image).save("output/pixel_sort.png"); 
     }
-
-
-
 }
