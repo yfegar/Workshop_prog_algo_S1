@@ -296,32 +296,35 @@ sil::Image mosaique_miroir(sil::Image& image)
     return canvas;
 }
 
-
-sil::Image pixel_sort(sil::Image& image)
+float brightness(glm::vec3 const& color)
 {
-    sil::Image sorted_image{image.width(), image.height()};
-    
-    unsigned long int image_pixel_number {image.pixels().size()};
-    for(int i {0}; i < image_pixel_number; i++)
-    {
-        sorted_image.pixels()[i] = image.pixels()[i];   
-    }
-
-    // deuxième méthode 
-    // std::vector<glm::vec3> sorted{sorted_image.pixels()};
-    // std::sort(sorted.begin(), sorted.end(), [](glm::vec3 const& color1, glm::vec3 const& color2)
-    // {
-    //     return color1.r < color2.r; // Trie selon la composante rouge
-    // });
-
-    // for(int i {0}; i < image_pixel_number; i++)
-    // {
-    //     sorted_image.pixels()[i] = sorted[i];   
-    // }
-    
-    return sorted_image;
+    return color.r + color.g + color.b;
 }
 
+
+void pixel_sort(sil::Image& image)
+{
+    std::sort(image.pixels().begin(), image.pixels().end(), [](glm::vec3 const& color1, glm::vec3 const& color2)
+    {
+        return brightness(color1) < brightness(color2); // Trie selon la luminosité des couleurs (NB : c'est à vous de coder la fonction `brightness`)
+    });
+}
+
+void pixel_sort_ligne(sil::Image& image)
+{
+    for(int y {0}; y < image.height(); y++)
+    {
+        auto ligne {y * image.width()};   
+        std::sort(
+            image.pixels().begin() + ligne,
+            image.pixels().begin() + ligne + image.width() ,
+            [](glm::vec3 const& color1, glm::vec3 const& color2)
+            {
+                return brightness(color1) < brightness(color2); // Trie selon la luminosité des couleurs (NB : c'est à vous de coder la fonction `brightness`)
+            });
+    }
+    
+}
 
 int main()
 {
@@ -390,7 +393,7 @@ int main()
         // image.save("output/high_luminance.png");
     }
     {
-        /* 11. DISk */
+        /* 11. DISK */
         // sil::Image image{500, 500};
         // disk(image, 250, 250);
         // image.save("output/disk.png");
@@ -427,8 +430,17 @@ int main()
         // mosaique_miroir(image).save("output/mosaique_miroir.png");
     }
     {
-        /* ?. PIXEL SORT */
-        sil::Image image{"images/low-quality-logo.png"};
-        pixel_sort(image).save("output/pixel_sort.png"); 
+        /* 18. PIXEL SORT */
+        // Tri de tous les pixels
+        // sil::Image image{"images/logo.png"};
+        // pixel_sort(image);
+        // image.save("output/pixel_sort.png"); 
+    }
+    {
+        /* 18.bis PIXEL SORT */
+        // Tri des lignes
+        sil::Image image{"images/logo.png"};
+        pixel_sort_ligne(image);
+        image.save("output/pixel_sort_ligne.png"); 
     }
 }
