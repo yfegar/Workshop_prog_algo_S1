@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include <complex>
-#include <cstdint>
+#include <glm/gtx/matrix_transform_2d.hpp>
 
 
 void keep_green_only(sil::Image& image)
@@ -59,15 +59,16 @@ void gradient(sil::Image& image)
 
 sil::Image mirror(sil::Image& image)
 {
-    sil::Image imageref = image;
-    for (int x {0}; x < image.width() - 1; x++)
+    sil::Image new_image = image;
+
+    for (int x {0}; x < image.width(); x++)
     {
         for (int y {0}; y < image.height(); y++)
         {
-            image.pixel(x, y) = imageref.pixel(image.width() - (x + 1), y);     
+            new_image.pixel(x, y) = image.pixel(image.width() - x - 1, y);     
         }
     }
-    return image;
+    return new_image;
 }
 
 void noise(sil::Image& image)
@@ -83,19 +84,15 @@ void noise(sil::Image& image)
     }  
 }
 
-sil::Image rotate_to_right(sil::Image& image)
+sil::Image rotate_to_right(const sil::Image& image)
 {
-    // la nouvelle image aura une width de 345 et une height de 300
     sil::Image new_image{image.height(), image.width()};
-    //                 = 300 - 1
+
     for (int x {0}; x < image.width() - 1; x++)
     {
-        //                 = 345 - 1
         for (int y {0}; y < image.height() - 1; y++)
         {
-            //                 = 300 - x
-            //new_image.pixel(y, new_image.height()-x) = image.pixel(x, y); 
-            new_image.pixel(y, new_image.height() - 1 - x) = image.pixel(x, y);     
+            new_image.pixel(image.height() - 1 - y, x) = image.pixel(x, y);     
         }
     } 
     return new_image;
@@ -269,11 +266,13 @@ sil::Image mosaique(sil::Image& image)
 
 sil::Image mosaique_miroir(sil::Image& image)
 {
-    // sil::Image imageref = image;
-    sil::Image image_inversee = mirror(image);
+    // les variantes de l'image
+    sil::Image horizontal = mirror(image);
+    sil::Image rot180 = rotate_to_right(rotate_to_right(image));
+    sil::Image vertical = rotate_to_right(rotate_to_right(horizontal));
+
     sil::Image canvas {5 * image.width(), 5 * image.height()};
   
-    // 2ÈME MÉTHODE
     for (int x {0}; x < canvas.width(); x++)
     {
         for (int y {0}; y < canvas.height(); y++)
@@ -286,13 +285,23 @@ sil::Image mosaique_miroir(sil::Image& image)
             int local_x = x % image.width();
             int local_y = y % image.height();
 
-            if (colonne % 2 == 0 && ligne % 2 == 0)
+            bool col_impaire {colonne % 2 == 1};
+            bool ligne_impaire {ligne % 2 == 1};
+
+            if (!col_impaire && !ligne_impaire)
             {
-                canvas.pixel(x,y) = image.pixel(local_x, local_y);  
-            } else 
+                canvas.pixel(x,y) = image.pixel(local_x, local_y);
+            } else if (col_impaire && !ligne_impaire)
             {
-                canvas.pixel(x,y) = image_inversee.pixel(local_x, local_y);  
-            }  
+                canvas.pixel(x,y) = horizontal.pixel(local_x, local_y);
+            } else if (!col_impaire && ligne_impaire)
+            {
+                canvas.pixel(x,y) = vertical.pixel(local_x, local_y);
+            }else 
+            {
+                canvas.pixel(x,y) = rot180.pixel(local_x, local_y);
+            }
+   
         } 
     };
     return canvas;
@@ -556,7 +565,7 @@ void dithering(sil::Image& image)
         { -0.3125,  0.1875, -0.4375,  0.0625 },
         {  0.4375, -0.0625,  0.3125, -0.1875 },
     };
-    
+
     for (int y {0}; y < image.height(); y++) 
     {
         for (int x {0}; x < image.width(); x++)
@@ -580,6 +589,43 @@ void dithering(sil::Image& image)
             image.pixel(x, y) = glm::vec3{result};
         }
     }
+}
+
+glm::vec2 rotated(glm::vec2 point, glm::vec2 center_of_rotation, float angle)
+    {
+        return glm::vec2{glm::rotate(glm::mat3{1.f}, angle) * glm::vec3{point - center_of_rotation, 0.f}} + center_of_rotation;
+    };
+
+void vortex(sil::Image& image)
+{
+    sil::Image imageref = image;
+
+    const glm::vec2 center {image.width() / 2.f, image.height() / 2.f};
+    const float strength {0.05f};
+
+    for (int y {0}; y < image.height(); y++)
+    {
+        for (int x {0}; x < image.width(); x++)
+        {
+            glm::vec2 p {static_cast<float>(x), static_cast<float>(y)};
+
+            float distance {glm::distance(p, center)};
+            float angle {distance * strength};
+
+            glm::vec2 src {rotated(p, center, angle)};
+
+            int sx {static_cast<int>(std::round(src.x))};
+            int sy {static_cast<int>(std::round(src.y))};
+
+            if (sx < 0 || sy < 0 || sx >= static_cast<int>(image.width()) || sy >= static_cast<int>(image.height()) )
+            {
+                image.pixel(x,y) = glm::vec3{0.f};
+            } else
+            {
+                image.pixel(x,y) = imageref.pixel(sx, sy);
+            }
+        }
+    }    
 }
 
 
@@ -628,8 +674,8 @@ int main()
     }
     {
         /* 8. ROTATE IMAGE BY 90 DEGREES */
-        // sil::Image image{"images/logo.png"};
-        // rotate_to_right(image).save("output/rotate_to_right.png"); // ça tourne vers la gauche ;(
+        sil::Image image{"images/logo.png"};
+        rotate_to_right(image).save("output/rotate_to_right.png"); // ça tourne vers la gauche ;(
     }
     {
         /* 9. RGB SPLIT */
@@ -682,9 +728,9 @@ int main()
         // mosaique(image).save("output/mosaique.png");
     }
     {
-        /* 16. MOSAIQUE MIROIR - PAS FINI */
-        // sil::Image image{"images/logo.png"};
-        // mosaique_miroir(image).save("output/mosaique_miroir.png");
+        /* 16. MOSAIQUE MIROIR */
+        sil::Image image{"images/logo.png"};
+        mosaique_miroir(image).save("output/mosaique_miroir.png");
     }
     {
         /* 17. GLITCH */
@@ -733,8 +779,14 @@ int main()
     }
     {
         /* 21. DITHERING */
-        sil::Image image{"images/photo.jpg"};
-        dithering(image);
-        image.save("output/dithering.png");
+        // sil::Image image{"images/photo.jpg"};
+        // dithering(image);
+        // image.save("output/dithering.png");
+    }
+     {
+        /* 22. VORTEX */
+        // sil::Image image{"images/logo.png"};
+        // vortex(image);
+        // image.save("output/vortex.png");
     }
 }
