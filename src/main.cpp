@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include <complex>
+#include <cstdint>
 
 
 void keep_green_only(sil::Image& image)
@@ -411,6 +412,125 @@ void mandelbrot(sil::Image& image)
     }
 }
 
+/* OKLAB */
+
+struct RGB {
+    float r,
+    g, 
+    b;
+};
+
+struct Lab {
+    float L,
+    a, 
+    b;
+};
+
+
+float sRGB_to_linear(float s)
+{
+    float seuil {0.04045f};
+    float l {0.0f};
+
+    if (0 <= s && s <= seuil)
+    {
+        l = s / 12.92f;
+    } else if (seuil < s && s <= 1)
+    {
+        l = std::pow(((s + 0.055f) / 1.055f), 2.4f);
+    }
+    return l;
+}
+
+
+inline Lab linear_srgb_to_oklab(RGB c)
+{
+    float l = 0.4122214708f * c.r + 0.5363325363f * c.g + 0.0514459929f * c.b;
+    float m = 0.2119034982f * c.r + 0.6806995451f * c.g + 0.1073969566f * c.b;
+    float s = 0.0883024619f * c.r + 0.2817188376f * c.g + 0.6299787005f * c.b;
+
+    float l_ = std::cbrt(l);
+    float m_ = std::cbrt(m);
+    float s_ = std::cbrt(s);
+
+    return {
+        0.2104542553f * l_ + 0.7936177850f * m_ - 0.0040720468f * s_,
+        1.9779984951f * l_ - 2.4285922050f * m_ + 0.4505937099f * s_,
+        0.0259040371f * l_ + 0.7827717662f * m_ - 0.8086757660f * s_,
+    };
+}
+
+inline Lab srgb8_to_oklab(float r, float g, float b)
+{
+    RGB lin {
+        sRGB_to_linear(r),
+        sRGB_to_linear(g),
+        sRGB_to_linear(b)
+    };
+    return linear_srgb_to_oklab(lin);
+
+}
+
+inline RGB oklab_to_linear_srgb(Lab c)
+{
+    float l_ = c.L + 0.3963377774f * c.a + 0.2158037573f * c.b;
+    float m_ = c.L - 0.1055613458f * c.a - 0.0638541728f * c.b;
+    float s_ = c.L - 0.0894841775f * c.a - 1.2914855480f * c.b;
+
+    float l = l_ * l_ * l_;
+    float m = m_ * m_ * m_;
+    float s = s_ * s_ * s_;
+
+    return {
+        +4.0767416621f * l - 3.3077115913f * m + 0.2309699292f * s,
+        -1.2684380046f * l + 2.6097574011f * m - 0.3413193965f * s,
+        -0.0041960863f * l - 0.7034186147f * m + 1.7076147010f * s,
+    };
+}
+
+inline float linear_to_srgb(float l)
+{
+    return (l <= 0.0031308f)
+        ? l * 12.92f
+        : 1.055f * std::pow(l, 1.0f / 2.4f) - 0.055f;
+}
+
+inline glm::vec3 oklab_to_srgb(Lab c)
+{
+    RGB lin = oklab_to_linear_srgb(c);
+    return glm::vec3{
+        linear_to_srgb(std::clamp(lin.r, 0.0f, 1.0f)),
+        linear_to_srgb(std::clamp(lin.g, 0.0f, 1.0f)),
+        linear_to_srgb(std::clamp(lin.b, 0.0f, 1.0f)),
+    };
+}
+
+
+void gradient_oklab(sil::Image& image)
+{
+    Lab c0 {srgb8_to_oklab(1.0f, 0.0f, 1.0f)}; // violet
+    Lab c1 {srgb8_to_oklab(0.0f, 1.0f, 1.0f)}; // vert
+
+    for (uint x {0}; x < image.width(); x++)
+    {
+        float t = static_cast<float>(x) / (image.width() - 1);
+
+        Lab c{
+            c0.L + t * (c1.L - c0.L),
+            c0.a + t * (c1.a - c0.a),
+            c0.b + t * (c1.b - c0.b),
+
+        };
+
+        glm::vec3 rgb {oklab_to_srgb(c)};
+
+        for (uint y {0}; y < image.height(); y++)
+        {
+            image.pixel(x, y) = rgb;   
+        }
+    }
+}
+
 int main()
 {
     {
@@ -543,8 +663,14 @@ int main()
     }
     {
         /* 19. FRACTALE DE MANDELBROT */
-        sil::Image image{500, 500};
-        mandelbrot(image);
-        image.save("output/mandelbrot.png"); 
+        // sil::Image image{500, 500};
+        // mandelbrot(image);
+        // image.save("output/mandelbrot.png"); 
+    }
+    {
+        /* 20. DÉGRADÉ OKLAB */
+        sil::Image image{300/*width*/, 200/*height*/};
+        gradient_oklab(image);
+        image.save("output/gradient_oklab.png");
     }
 }
