@@ -96,8 +96,13 @@ J'ai ajouté à posteriori les coordonnées du centre du cercle dans les paramè
 
 ## ★★★(★) DÉGRADÉ DANS L'ESPACE DE COULEUR LAB
 
+![alt text](image-3.png)
+
 ![alt text](output/gradient_oklab.png)
 
 Note : J'ai eu un peu de mal avec les conversions, et je me suis rendue compte qu'il fallait faire le chemin inverse une fois qu'on avait obtenu des valeurs Oklab, pour pouvoir les lire en sRGB.
 Néanmoins, le résultat est satisfaisant et je préfère nettement les dégradés générés dans l'espace de couleur Oklab !
 
+## ★★★(★) TRAMAGE
+
+![alt text](output/dithering.png)

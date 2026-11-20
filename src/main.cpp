@@ -412,7 +412,7 @@ void mandelbrot(sil::Image& image)
     }
 }
 
-/* OKLAB */
+/* EX 20 : OKLAB */
 
 struct RGB {
     float r,
@@ -530,6 +530,58 @@ void gradient_oklab(sil::Image& image)
         }
     }
 }
+
+void gradient_srgb(sil::Image& image)
+{
+    for (float x {0.f}; x < image.width(); x++)
+    {
+        float t = static_cast<float>(x) / (image.width() - 1);
+        glm::vec3 couleur {1.0f - t, t, 1.0f};
+
+        for (float y {0.f}; y < image.height(); y++)
+        {
+            image.pixel(x, y) = couleur;   
+        }
+    }
+}
+
+/* FIN EX 20 : OKLAB */
+
+void dithering(sil::Image& image)
+{
+    const int bayer_n = 4;
+    float bayer_matrix_4x4[][bayer_n] = {
+        {    -0.5,       0,  -0.375,   0.125 },
+        {    0.25,   -0.25,   0.375, - 0.125 },
+        { -0.3125,  0.1875, -0.4375,  0.0625 },
+        {  0.4375, -0.0625,  0.3125, -0.1875 },
+    };
+    
+    for (int y {0}; y < image.height(); y++) 
+    {
+        for (int x {0}; x < image.width(); x++)
+         {  
+            glm::vec3 c = image.pixel(x, y);
+
+            float gray {0.5f * c.r + 0.5f * c.g + 0.5f * c.b};
+
+            gray += bayer_matrix_4x4[y % bayer_n][x % bayer_n];
+            
+            float result {0.0f};
+
+            if (gray < 0.5f)
+            {
+                result = 0.0f;
+            } else
+            {
+                result = 1.0f;
+            }
+
+            image.pixel(x, y) = glm::vec3{result};
+        }
+    }
+}
+
 
 int main()
 {
@@ -668,9 +720,21 @@ int main()
         // image.save("output/mandelbrot.png"); 
     }
     {
-        /* 20. DÉGRADÉ OKLAB */
-        sil::Image image{300/*width*/, 200/*height*/};
-        gradient_oklab(image);
-        image.save("output/gradient_oklab.png");
+        /* 20. DÉGRADÉ SRGB */
+        // sil::Image image{300/*width*/, 200/*height*/};
+        // gradient_srgb(image);
+        // image.save("output/gradient_srgb.png");
+    }
+    {
+        /* 20.bis DÉGRADÉ OKLAB */
+        // sil::Image image{300/*width*/, 200/*height*/};
+        // gradient_oklab(image);
+        // image.save("output/gradient_oklab.png");
+    }
+    {
+        /* 21. DITHERING */
+        sil::Image image{"images/photo.jpg"};
+        dithering(image);
+        image.save("output/dithering.png");
     }
 }
