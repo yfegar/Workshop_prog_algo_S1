@@ -107,17 +107,6 @@ void rgb_split(sil::Image& image)
     {
         for (int y {0}; y < image.height(); y++)
         {
-            // if(x <= gap) // si x est entre 0 et 20
-            // {
-            //     image.pixel(x, y).r = imageref.pixel(x , y).r;  
-            //     image.pixel(x, y).g = imageref.pixel(x, y).g; 
-            //     image.pixel(x, y).b = imageref.pixel(x + gap , y).b; // on décale juste le bleu
-            // } else if (x >= image.width() - gap)
-            // {
-            //     image.pixel(x, y).r = imageref.pixel(x - gap, y).r;  
-            //     image.pixel(x, y).g = imageref.pixel(x, y).g;  
-            //     image.pixel(x, y).b = imageref.pixel(x , y).b;  
-            // }
             image.pixel(x, y).r = imageref.pixel(x - gap, y).r;  
             image.pixel(x, y).g = imageref.pixel(x, y).g;  
             image.pixel(x, y).b = imageref.pixel(x + gap, y).b;    
@@ -224,35 +213,7 @@ sil::Image mosaique(sil::Image& image)
 {
     sil::Image imageref = image;
     sil::Image canvas {5 * image.width(), 5 * image.height()};
-    
-    // // 1ÈRE MÉTHODE
-    // sil::Image canvas{1500,1725};
 
-    // // if 1500 % 300 = 1 : place l'image
-    
-    // if (canvas.width() % image.width() == 0) // 1500 % 300 = 0
-    // {
-    //     if (canvas.height() % image.height() == 0)
-    //     {
-    //       for (int i {0}; i < (canvas.width() / image.width()); i++) // i < 5
-    //     {
-    //         for (int j {0}; j < (canvas.height() / image.height()); j++)
-    //         {
-                
-    //             // on génère l'image aux coordonnées du canvas
-    //             for (int x{0}; x < image.width(); x++)
-    //                 {
-    //                     for (int y{0}; y < image.height(); y++)
-    //                     {
-    //                         canvas.pixel(x + i * image.width(), y + j * image.height()) = image.pixel(x, y);  
-    //                     }
-    //                 }
-    //             }
-    //         }       
-    // }
-        
-
-    // 2ÈME MÉTHODE
     for (int x {0}; x < canvas.width(); x ++)
     {
         for (int y {0}; y < canvas.height(); y ++)
@@ -345,7 +306,7 @@ void pixel_sort(sil::Image& image)
 {
     std::sort(image.pixels().begin(), image.pixels().end(), [](glm::vec3 const& color1, glm::vec3 const& color2)
     {
-        return brightness(color1) < brightness(color2); // Trie selon la luminosité des couleurs (NB : c'est à vous de coder la fonction `brightness`)
+        return brightness(color1) < brightness(color2); 
     });
 }
 
@@ -359,7 +320,7 @@ void pixel_sort_ligne(sil::Image& image)
             image.pixels().begin() + ligne + image.width() ,
             [](glm::vec3 const& color1, glm::vec3 const& color2)
             {
-                return brightness(color1) < brightness(color2); // Trie selon la luminosité des couleurs (NB : c'est à vous de coder la fonction `brightness`)
+                return brightness(color1) < brightness(color2); 
             });
     }
   
@@ -674,8 +635,8 @@ int main()
     }
     {
         /* 8. ROTATE IMAGE BY 90 DEGREES */
-        sil::Image image{"images/logo.png"};
-        rotate_to_right(image).save("output/rotate_to_right.png"); // ça tourne vers la gauche ;(
+        // sil::Image image{"images/logo.png"};
+        // rotate_to_right(image).save("output/rotate_to_right.png"); // ça tourne vers la gauche ;(
     }
     {
         /* 9. RGB SPLIT */
@@ -729,8 +690,8 @@ int main()
     }
     {
         /* 16. MOSAIQUE MIROIR */
-        sil::Image image{"images/logo.png"};
-        mosaique_miroir(image).save("output/mosaique_miroir.png");
+        // sil::Image image{"images/logo.png"};
+        // mosaique_miroir(image).save("output/mosaique_miroir.png");
     }
     {
         /* 17. GLITCH */
